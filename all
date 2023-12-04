@@ -1,0 +1,1116 @@
+53, 71)  Automatic nought and crossess using random number
+import random
+
+def print_board(board):
+    for row in board:
+        print(" | ".join(row))
+        print("-" * 9)
+
+def check_winner(board, player):
+    for row in board:
+        if all(cell == player for cell in row):
+            return True
+
+    for col in range(3):
+        if all(board[row][col] == player for row in range(3)):
+            return True
+
+    if all(board[i][i] == player for i in range(3)) or all(board[i][2 - i] == player for i in range(3)):
+        return True
+
+    return False
+
+def is_board_full(board):
+    return all(cell != ' ' for row in board for cell in row)
+
+def play_game():
+    board = [[' ' for _ in range(3)] for _ in range(3)]
+    current_player = 'X'
+
+    while True:
+        print_board(board)
+
+        if current_player == 'X':
+            print("Player X's turn:")
+            row, col = map(int, input("Enter row and column (e.g., 1 2): ").split())
+        else:
+            print("Player O's turn:")
+            row, col = random.randint(0, 2), random.randint(0, 2)
+
+        if 0 <= row < 3 and 0 <= col < 3 and board[row][col] == ' ':
+            board[row][col] = current_player
+            if check_winner(board, current_player):
+                print_board(board)
+                print(f"Player {current_player} wins!")
+                break
+            elif is_board_full(board):
+                print_board(board)
+                print("It's a tie!")
+                break
+            else:
+                current_player = 'O' if current_player == 'X' else 'X'
+        else:
+            print("Invalid move. Try again.")
+
+if __name__ == "__main__":
+    play_game()
+
+
+54, 69) CSP for sodoku game
+Csp: from constraint import Problem, AllDifferentConstraint
+
+def create_sudoku_csp(board):
+    problem = Problem()
+
+    # Add variables for each cell
+    for i in range(9):
+        for j in range(9):
+            if board[i][j] == 0:
+                problem.addVariable(f"cell_{i}_{j}", range(1, 10))
+
+    # Add constraints for rows, columns, and 3x3 subgrids
+    for i in range(9):
+        # Row constraint
+        problem.addConstraint(AllDifferentConstraint(), [f"cell_{i}_{j}" for j in range(9)])
+
+        # Column constraint
+        problem.addConstraint(AllDifferentConstraint(), [f"cell_{j}_{i}" for j in range(9)])
+
+    # Subgrid constraint
+    for i in range(0, 9, 3):
+        for j in range(0, 9, 3):
+            problem.addConstraint(AllDifferentConstraint(), [f"cell_{x}_{y}" for x in range(i, i + 3) for y in range(j, j + 3)])
+
+    # Add initial assignments as constraints
+    for i in range(9):
+        for j in range(9):
+            if board[i][j] != 0:
+                problem.addConstraint(lambda value, i=i, j=j: value == board[i][j], (f"cell_{i}_{j}",))
+
+    return problem
+
+def solve_sudoku(board):
+    csp = create_sudoku_csp(board)
+    solution = csp.getSolution()
+    return solution
+
+def print_sudoku(board):
+    for row in board:
+        print(" ".join(map(str, row)))
+
+if __name__ == "__main__":
+    # Example Sudoku board (0 represents empty cells)
+    sudoku_board = [
+        [5, 3, 0, 0, 7, 0, 0, 0, 0],
+        [6, 0, 0, 1, 9, 5, 0, 0, 0],
+        [0, 9, 8, 0, 0, 0, 0, 6, 0],
+        [8, 0, 0, 0, 6, 0, 0, 0, 3],
+        [4, 0, 0, 8, 0, 3, 0, 0, 1],
+        [7, 0, 0, 0, 2, 0, 0, 0, 6],
+        [0, 6, 0, 0, 0, 0, 2, 8, 0],
+        [0, 0, 0, 4, 1, 9, 0, 0, 5],
+        [0, 0, 0, 0, 8, 0, 0, 7, 9]
+    ]
+
+    print("Initial Sudoku Board:")
+    print_sudoku(sudoku_board)
+
+    solution = solve_sudoku(sudoku_board)
+
+    if solution:
+        print("\nSolved Sudoku:")
+        solved_board = [[solution[f"cell_{i}_{j}"] for j in range(9)] for i in range(9)]
+        print_sudoku(solved_board)
+    else:
+        print("\nNo solution found.")
+user input: from constraint import Problem, AllDifferentConstraint
+
+def create_sudoku_csp(board):
+    problem = Problem()
+
+    # Add variables for each cell
+    for i in range(9):
+        for j in range(9):
+            if board[i][j] == 0:
+                problem.addVariable(f"cell_{i}_{j}", range(1, 10))
+
+    # Add constraints for rows, columns, and 3x3 subgrids
+    for i in range(9):
+        # Row constraint
+        problem.addConstraint(AllDifferentConstraint(), [f"cell_{i}_{j}" for j in range(9)])
+
+        # Column constraint
+        problem.addConstraint(AllDifferentConstraint(), [f"cell_{j}_{i}" for j in range(9)])
+
+    # Subgrid constraint
+    for i in range(0, 9, 3):
+        for j in range(0, 9, 3):
+            problem.addConstraint(AllDifferentConstraint(), [f"cell_{x}_{y}" for x in range(i, i + 3) for y in range(j, j + 3)])
+
+    # Add initial assignments as constraints
+    for i in range(9):
+        for j in range(9):
+            if board[i][j] != 0:
+                problem.addConstraint(lambda value, i=i, j=j: value == board[i][j], (f"cell_{i}_{j}",))
+
+    return problem
+
+def solve_sudoku(board):
+    csp = create_sudoku_csp(board)
+    solution = csp.getSolution()
+    return solution
+
+def print_sudoku(board):
+    for row in board:
+        print(" ".join(map(str, row)))
+
+def get_user_input():
+    print("Enter the Sudoku board:")
+    board = []
+    for _ in range(9):
+        row = list(map(int, input().split()))
+        board.append(row)
+    return board
+
+if __name__ == "__main__":
+    sudoku_board = get_user_input()
+
+    print("\nInitial Sudoku Board:")
+    print_sudoku(sudoku_board)
+
+    solution = solve_sudoku(sudoku_board)
+
+    if solution:
+        print("\nSolved Sudoku:")
+        solved_board = [[solution[f"cell_{i}_{j}"] for j in range(9)] for i in range(9)]
+        print_sudoku(solved_board)
+    else:
+        print("\nNo solution found.")
+
+
+  .def is_valid_move(board, row, col, num):
+    # Check if 'num' is not in the current row, column, and subgrid
+    return (
+        all(num != board[row][i] for i in range(9)) and
+        all(num != board[i][col] for i in range(9)) and
+        all(num != board[row // 3 * 3 + i][col // 3 * 3 + j] for i in range(3) for j in range(3))
+    )
+
+def solve_sudoku(board):
+    empty_cell = find_empty_cell(board)
+
+    if not empty_cell:
+        # All cells are filled, the puzzle is solved
+        return True
+
+    row, col = empty_cell
+
+    for num in range(1, 10):
+        if is_valid_move(board, row, col, num):
+            board[row][col] = num
+
+            if solve_sudoku(board):
+                return True
+
+            # If placing 'num' at (row, col) doesn't lead to a solution, backtrack
+            board[row][col] = 0
+
+    # No valid number found, backtrack
+    return False
+
+def find_empty_cell(board):
+    for i in range(9):
+        for j in range(9):
+            if board[i][j] == 0:
+                return i, j
+    return None
+
+if __name__ == "__main__":
+    # Example Sudoku board (0 represents empty cells)
+    sudoku_board = [
+        [5, 3, 0, 0, 7, 0, 0, 0, 0],
+        [6, 0, 0, 1, 9, 5, 0, 0, 0],
+        [0, 9, 8, 0, 0, 0, 0, 6, 0],
+        [8, 0, 0, 0, 6, 0, 0, 0, 3],
+        [4, 0, 0, 8, 0, 3, 0, 0, 1],
+        [7, 0, 0, 0, 2, 0, 0, 0, 6],
+        [0, 6, 0, 0, 0, 0, 2, 8, 0],
+        [0, 0, 0, 4, 1, 9, 0, 0, 5],
+        [0, 0, 0, 0, 8, 0, 0, 7, 9]
+    ]
+
+    if solve_sudoku(sudoku_board):
+        print("Sudoku Solution:")
+        for row in sudoku_board:
+            print(row)
+    else:
+        print("No solution found.")
+
+user input: def is_valid_move(board, row, col, num):
+    return (
+        all(num != board[row][i] for i in range(9)) and
+        all(num != board[i][col] for i in range(9)) and
+        all(num != board[row // 3 * 3 + i][col // 3 * 3 + j] for i in range(3) for j in range(3))
+    )
+
+def solve_sudoku(board):
+    empty_cell = find_empty_cell(board)
+
+    if not empty_cell:
+        return True
+
+    row, col = empty_cell
+
+    for num in range(1, 10):
+        if is_valid_move(board, row, col, num):
+            board[row][col] = num
+
+            if solve_sudoku(board):
+                return True
+
+            board[row][col] = 0
+
+    return False
+
+def find_empty_cell(board):
+    for i in range(9):
+        for j in range(9):
+            if board[i][j] == 0:
+                return i, j
+    return None
+
+def print_board(board):
+    for row in board:
+        print(" ".join(str(cell) if cell != 0 else '.' for cell in row))
+
+def get_user_input():
+    board = []
+    print("Enter the Sudoku puzzle row by row. Use '0' for empty cells.")
+    for _ in range(9):
+        row = input("Enter a row (9 digits separated by space): ").split()
+        board.append([int(cell) for cell in row])
+    return board
+
+if __name__ == "__main__":
+    sudoku_board = get_user_input()
+
+    print("\nInitial Sudoku Puzzle:")
+    print_board(sudoku_board)
+
+    if solve_sudoku(sudoku_board):
+        print("\nSudoku Solution:")
+        print_board(sudoku_board)
+    else:
+        print("No solution found.")
+
+50, 48, 68) Implement goal stack planning for block world problem
+class BlockWorld:
+    def __init__(self, initial_state):
+        self.state = initial_state
+        self.goal_stack = []
+
+    def apply_action(self, action):
+        if action[0] == 'move':
+            block, source, destination = action[1], action[2], action[3]
+
+            # Check if the block is in the state before removing it
+            if (block, source) in self.state:
+                self.state.remove((block, source))
+                self.state.append((block, destination))
+            else:
+                print(f"Warning: Block {block} not found at {source}. Skipping action.")
+
+    def is_goal_achieved(self):
+        return all(item in self.state for item in self.goal_stack)
+
+    def execute_plan(self, plan):
+        for action in plan:
+            self.apply_action(action)
+            print(f"Action: {action}, State: {self.state}")
+
+def block_world_planning(goal_state, initial_state):
+    block_world = BlockWorld(initial_state)
+    block_world.goal_stack = goal_state
+
+    plan = []
+    for goal in goal_state:
+        if goal not in block_world.state:
+            sub_plan = [('move', item[0], item[1], goal[1]) for item in block_world.state if item[0] == goal[0]]
+            plan.extend(sub_plan)
+            plan.append(('move', goal[0], goal[1], 'table'))
+
+    return plan
+
+if __name__ == "__main__":
+    initial_state = [('A', 'table'), ('B', 'A'), ('C', 'table')]
+    goal_state = [('A', 'table'), ('C', 'A'), ('B', 'C')]
+
+    plan = block_world_planning(goal_state, initial_state)
+
+    block_world = BlockWorld(initial_state)
+    block_world.execute_plan(plan)
+
+user input: class BlockWorld:
+    def __init__(self, initial_state):
+        self.state = initial_state
+        self.goal_stack = []
+
+    def apply_action(self, action):
+        if action[0] == 'move':
+            block, source, destination = action[1], action[2], action[3]
+
+            # Check if the block is in the state before removing it
+            if (block, source) in self.state:
+                self.state.remove((block, source))
+                self.state.append((block, destination))
+            else:
+                print(f"Warning: Block {block} not found at {source}. Skipping action.")
+
+    def is_goal_achieved(self):
+        return all(item in self.state for item in self.goal_stack)
+
+    def execute_plan(self, plan):
+        for action in plan:
+            self.apply_action(action)
+            print(f"Action: {action}, State: {self.state}")
+
+def get_user_input(prompt):
+    user_input = input(prompt)
+    return [tuple(item.split()) for item in user_input.split(',')]
+
+if __name__ == "__main__":
+    print("Enter the initial state (e.g., A table, B A, C table):")
+    initial_state = get_user_input("Initial state: ")
+
+    print("Enter the goal state (e.g., A table, C A, B C):")
+    goal_state = get_user_input("Goal state: ")
+
+    plan = block_world_planning(goal_state, initial_state)
+
+    block_world = BlockWorld(initial_state)
+    print("\nInitial State:", block_world.state)
+    print("Goal State:", goal_state)
+
+    block_world.execute_plan(plan)
+
+67) write a program to implement hill climbing algorithm
+import random
+
+def objective_function(state):
+    # Define your objective function here
+    # For example, consider maximizing the sum of state values
+    return sum(state)
+
+def generate_neighbor(current_state):
+    # Generate a neighboring state by randomly changing one element
+    neighbor = current_state.copy()
+    index_to_change = random.randint(0, len(current_state) - 1)
+    neighbor[index_to_change] += random.choice([-1, 1])
+    return neighbor
+
+def hill_climbing(initial_state, max_iterations):
+    current_state = initial_state
+    current_value = objective_function(current_state)
+
+    for iteration in range(max_iterations):
+        neighbor = generate_neighbor(current_state)
+        neighbor_value = objective_function(neighbor)
+
+        if neighbor_value > current_value:
+            current_state = neighbor
+            current_value = neighbor_value
+
+    return current_state, current_value
+
+if __name__ == "__main__":
+    # Define the problem - initial state and number of iterations
+    initial_state = [random.randint(0, 10) for _ in range(5)]
+    max_iterations = 1000
+
+    # Run Hill Climbing algorithm
+    final_state, final_value = hill_climbing(initial_state, max_iterations)
+
+    # Print results
+    print("Initial State:", initial_state)
+    print("Final State:", final_state)
+    print("Objective Value:", final_value)
+
+user input: import random
+
+def objective_function(state):
+    return sum(state)
+
+def generate_neighbor(current_state):
+    neighbor = current_state.copy()
+    index_to_change = random.randint(0, len(current_state) - 1)
+    neighbor[index_to_change] += random.choice([-1, 1])
+    return neighbor
+
+def hill_climbing(initial_state, max_iterations):
+    current_state = initial_state
+    current_value = objective_function(current_state)
+
+    for iteration in range(max_iterations):
+        neighbor = generate_neighbor(current_state)
+        neighbor_value = objective_function(neighbor)
+
+        if neighbor_value > current_value:
+            current_state = neighbor
+            current_value = neighbor_value
+
+    return current_state, current_value
+
+def get_user_input():
+    length = int(input("Enter the length of the state vector: "))
+    initial_state = [random.randint(0, 10) for _ in range(length)]
+    max_iterations = int(input("Enter the maximum number of iterations: "))
+    return initial_state, max_iterations
+
+if __name__ == "__main__":
+    initial_state, max_iterations = get_user_input()
+
+    final_state, final_value = hill_climbing(initial_state, max_iterations)
+
+    print("Initial State:", initial_state)
+    print("Final State:", final_state)
+    print("Objective Value:", final_value)
+
+66)  Build an expert system for traffic control signal
+class TrafficControlExpertSystem:
+    def __init__(self):
+        self.rules = [
+            {'condition': 'heavy_traffic', 'signal': 'red'},
+            {'condition': 'moderate_traffic', 'signal': 'yellow'},
+            {'condition': 'light_traffic', 'signal': 'green'}
+        ]
+
+    def get_traffic_signal(self, traffic_condition):
+        for rule in self.rules:
+            if rule['condition'] == traffic_condition:
+                return rule['signal']
+        return 'unknown'
+
+if __name__ == "__main__":
+    expert_system = TrafficControlExpertSystem()
+
+    # Example usage
+    traffic_condition = input("Enter traffic condition (heavy_traffic, moderate_traffic, light_traffic): ")
+    signal = expert_system.get_traffic_signal(traffic_condition)
+
+    if signal != 'unknown':
+        print(f"The recommended traffic signal is {signal}.")
+    else:
+        print("Unknown traffic condition.")
+62) Implement and compare different search algorithm such as A*, depth-first search, on puzzle measure and compare the performance of the algorithm in terms of time complexity and solution quality 
+import heapq
+import time
+
+class PuzzleNode:
+    def __init__(self, state, parent=None, action=None, cost=0):
+        self.state = state
+        self.parent = parent
+        self.action = action
+        self.cost = cost
+        self.heuristic = self.calculate_heuristic()
+
+    def calculate_heuristic(self):
+        # Implement a heuristic function (e.g., Manhattan distance)
+        pass
+
+    def __lt__(self, other):
+        return (self.cost + self.heuristic) < (other.cost + other.heuristic)
+
+def a_star_search(initial_state):
+    # Implement A* algorithm
+    pass
+
+class DFSNode:
+    def __init__(self, state, parent=None, action=None, cost=0):
+        self.state = state
+        self.parent = parent
+        self.action = action
+        self.cost = cost
+
+def depth_first_search(initial_state):
+    # Implement DFS algorithm
+    pass
+
+def run_algorithm(algorithm, initial_state):
+    start_time = time.time()
+    solution = algorithm(initial_state)
+    end_time = time.time()
+    return solution, end_time - start_time
+
+if __name__ == "__main__":
+    # Define your puzzle problem and initial state
+    # For example, in an 8-puzzle problem, the initial state may look like:
+    initial_state = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
+
+    # Run A* algorithm
+    a_star_solution, a_star_time = run_algorithm(a_star_search, initial_state)
+
+    # Run DFS algorithm
+    dfs_solution, dfs_time = run_algorithm(depth_first_search, initial_state)
+
+    # Compare results
+    print("A* Algorithm:")
+    print("Solution:", a_star_solution)
+    print("Time taken:", a_star_time)
+
+    print("\nDFS Algorithm:")
+    print("Solution:", dfs_solution)
+    print("Time taken:", dfs_time)
+user input: import heapq
+import time
+
+class PuzzleNode:
+    def __init__(self, state, parent=None, action=None, cost=0):
+        self.state = state
+        self.parent = parent
+        self.action = action
+        self.cost = cost
+        self.heuristic = self.calculate_heuristic()
+
+    def calculate_heuristic(self):
+        # Implement a heuristic function (e.g., Manhattan distance)
+        pass
+
+    def __lt__(self, other):
+        return (self.cost + self.heuristic) < (other.cost + other.heuristic)
+
+def a_star_search(initial_state):
+    # Implement A* algorithm
+    pass
+
+class DFSNode:
+    def __init__(self, state, parent=None, action=None, cost=0):
+        self.state = state
+        self.parent = parent
+        self.action = action
+        self.cost = cost
+
+def depth_first_search(initial_state):
+    # Implement DFS algorithm
+    pass
+
+def run_algorithm(algorithm, initial_state):
+    start_time = time.time()
+    solution = algorithm(initial_state)
+    end_time = time.time()
+    return solution, end_time - start_time
+
+def get_user_input():
+    print("Enter the initial state of the puzzle (3x3 matrix):")
+    initial_state = []
+    for i in range(3):
+        row = list(map(int, input().split()))
+        initial_state.append(row)
+    return initial_state
+
+if __name__ == "__main__":
+    # Get user input for the initial state
+    initial_state = get_user_input()
+
+    # Run A* algorithm
+    a_star_solution, a_star_time = run_algorithm(a_star_search, initial_state)
+
+    # Run DFS algorithm
+    dfs_solution, dfs_time = run_algorithm(depth_first_search, initial_state)
+
+    # Compare results
+    print("A* Algorithm:")
+    print("Solution:", a_star_solution)
+    print("Time taken:", a_star_time)
+
+    print("\nDFS Algorithm:")
+    print("Solution:", dfs_solution)
+    print("Time taken:", dfs_time)
+47, 61) Constraint Satisfaction problem for crossword problem
+Csp: from constraint import Problem, AllDifferentConstraint
+
+def create_crossword_csp(words, grid_size):
+    problem = Problem()
+
+    # Define variables (word placements)
+    for word in words:
+        word_length = len(word)
+        for i in range(grid_size - word_length + 1):
+            for j in range(grid_size):
+                problem.addVariable(f"{word}_{i}_{j}", [0, 1])
+
+    # Add constraints for horizontal and vertical placement
+    for word1 in words:
+        for word2 in words:
+            if word1 != word2:
+                for i in range(grid_size):
+                    for j in range(grid_size):
+                        if i + len(word1) <= grid_size and j + len(word2) <= grid_size:
+                            # Check horizontal placement
+                            constraint_expr = [(f"{word1}_{i}_{k}", 1) for k in range(len(word1))] + \
+                                              [(f"{word2}_{j}_{k}", 1) for k in range(len(word2))]
+                            problem.addConstraint(AllDifferentConstraint(), constraint_expr)
+
+                            # Check vertical placement
+                            constraint_expr = [(f"{word1}_{k}_{j}", 1) for k in range(len(word1))] + \
+                                              [(f"{word2}_{k}_{i}", 1) for k in range(len(word2))]
+                            problem.addConstraint(AllDifferentConstraint(), constraint_expr)
+
+    return problem
+
+def solve_crossword(words, grid_size):
+    csp = create_crossword_csp(words, grid_size)
+    solution = csp.getSolution()
+    return solution
+
+def print_crossword_solution(solution, words, grid_size):
+    grid = [[' ' for _ in range(grid_size)] for _ in range(grid_size)]
+
+    for var, value in solution.items():
+        if value == 1:
+            word, i, j = var.split('_')
+            i, j = int(i), int(j)
+            for k, letter in enumerate(word):
+                if word[i] != grid[i + k][j]:
+                    grid[i + k][j] = letter
+
+    # Print the crossword grid
+    for row in grid:
+        print(' '.join(row))
+
+if __name__ == "__main__":
+    # Example words for the crossword
+    crossword_words = ["python", "java", "swift", "csharp", "ruby", "html"]
+
+    # Size of the crossword grid (assumes a square grid)
+    crossword_grid_size = 10
+
+    # Solve the crossword puzzle
+    crossword_solution = solve_crossword(crossword_words, crossword_grid_size)
+
+    if crossword_solution:
+        print("\nCrossword Solution:")
+        print_crossword_solution(crossword_solution, crossword_words, crossword_grid_size)
+    else:
+        print("\nNo solution found.")
+user input: from constraint import Problem, AllDifferentConstraint
+
+def create_crossword_csp(words, grid_size):
+    problem = Problem()
+
+    # Define variables (word placements)
+    for word in words:
+        word_length = len(word)
+        for i in range(grid_size - word_length + 1):
+            for j in range(grid_size):
+                problem.addVariable(f"{word}_{i}_{j}", [0, 1])
+
+    # Add constraints for horizontal and vertical placement
+    for word1 in words:
+        for word2 in words:
+            if word1 != word2:
+                for i in range(grid_size):
+                    for j in range(grid_size):
+                        if i + len(word1) <= grid_size and j + len(word2) <= grid_size:
+                            # Check horizontal placement
+                            constraint_expr = [(f"{word1}_{i}_{k}", 1) for k in range(len(word1))] + \
+                                              [(f"{word2}_{j}_{k}", 1) for k in range(len(word2))]
+                            problem.addConstraint(AllDifferentConstraint(), constraint_expr)
+
+                            # Check vertical placement
+                            constraint_expr = [(f"{word1}_{k}_{j}", 1) for k in range(len(word1))] + \
+                                              [(f"{word2}_{k}_{i}", 1) for k in range(len(word2))]
+                            problem.addConstraint(AllDifferentConstraint(), constraint_expr)
+
+    return problem
+
+def solve_crossword(words, grid_size):
+    csp = create_crossword_csp(words, grid_size)
+    solution = csp.getSolution()
+    return solution
+
+def print_crossword_solution(solution, words, grid_size):
+    grid = [[' ' for _ in range(grid_size)] for _ in range(grid_size)]
+
+    for var, value in solution.items():
+        if value == 1:
+            word, i, j = var.split('_')
+            i, j = int(i), int(j)
+            for k, letter in enumerate(word):
+                if word[i] != grid[i + k][j]:
+                    grid[i + k][j] = letter
+
+    # Print the crossword grid
+    for row in grid:
+        print(' '.join(row))
+
+def get_user_input():
+    print("Enter the words for the crossword (separated by spaces):")
+    words = input().split()
+
+    print("Enter the size of the crossword grid:")
+    grid_size = int(input())
+
+    return words, grid_size
+
+if __name__ == "__main__":
+    crossword_words, crossword_grid_size = get_user_input()
+
+    # Solve the crossword puzzle
+    crossword_solution = solve_crossword(crossword_words, crossword_grid_size)
+
+    if crossword_solution:
+        print("\nCrossword Solution:")
+        print_crossword_solution(crossword_solution, crossword_words, crossword_grid_size)
+    else:
+        print("\nNo solution found.")
+
+2. def crossword_csp(words, grid):
+    assignment = {}
+    solutions = backtrack(assignment, words, grid)
+    return solutions if solutions else []
+
+def backtrack(assignment, words, grid):
+    if len(assignment) == len(grid) * len(grid[0]):
+        return [assignment.copy()]
+    
+    i, j = divmod(len(assignment), len(grid[0]))
+    
+    if grid[i][j] == '.':
+        for word in words:
+            new_assignment = assignment.copy()
+            new_assignment[f"({i},{j})"] = word
+            result = backtrack(new_assignment, words, grid)
+            if result:
+                return result
+    
+    return None
+
+if __name__ == "__main__":
+    crossword_grid = [
+        ['.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.'],
+    ]
+
+    word_list = ["python", "java", "swift", "csharp", "ruby", "html"]
+
+    solutions = crossword_csp(word_list, crossword_grid)
+
+    for solution in solutions:
+        for i in range(len(crossword_grid)):
+            for j in range(len(crossword_grid[i])):
+                print(solution.get(f"({i},{j})", '.'), end=' ')
+            print()
+        print("\n")
+
+user input: def crossword_csp(words, grid):
+    assignment = {}
+    solutions = backtrack(assignment, words, grid)
+    return solutions if solutions else []
+
+def backtrack(assignment, words, grid):
+    if len(assignment) == len(grid) * len(grid[0]):
+        return [assignment.copy()]
+    
+    i, j = divmod(len(assignment), len(grid[0]))
+    
+    if grid[i][j] == '.':
+        for word in words:
+            new_assignment = assignment.copy()
+            new_assignment[f"({i},{j})"] = word
+            result = backtrack(new_assignment, words, grid)
+            if result:
+                return result
+    
+    return None
+
+def get_user_input():
+    print("Enter the crossword grid (use '.' for empty cells):")
+    crossword_grid = []
+    for _ in range(6):  # Assuming a 6x6 grid for simplicity
+        row = list(input())
+        crossword_grid.append(row)
+    return crossword_grid
+
+if __name__ == "__main__":
+    crossword_grid = get_user_input()
+
+    print("Enter the word list:")
+    word_list = input().split()
+
+    solutions = crossword_csp(word_list, crossword_grid)
+
+    for solution in solutions:
+        for i in range(len(crossword_grid)):
+            for j in range(len(crossword_grid[i])):
+                print(solution.get(f"({i},{j})", '.'), end=' ')
+            print()
+        print("\n")
+43,60) Build an expert system for financial planning
+class FinancialExpertSystem:
+    def __init__(self):
+        self.knowledge_base = {}
+
+    def ask_question(self, question):
+        response = input(question + " (yes/no): ").lower()
+        return response == 'yes'
+
+    def get_numeric_input(self, prompt):
+        while True:
+            try:
+                return float(input(prompt))
+            except ValueError:
+                print("Please enter a valid numeric value.")
+
+    def recommend_investment_strategy(self):
+        age = int(input("What is your age? "))
+        income = self.get_numeric_input("What is your annual income? $")
+        debt = self.get_numeric_input("Do you have any outstanding debt? $")
+        risk_tolerance = self.ask_question("Are you comfortable with high-risk investments?")
+
+        # Basic recommendation logic
+        recommendation = "Conservative" if age > 50 or debt > 10000 else "Moderate"
+        if risk_tolerance:
+            recommendation = "Aggressive"
+
+        self.knowledge_base['age'] = age
+        self.knowledge_base['income'] = income
+        self.knowledge_base['debt'] = debt
+        self.knowledge_base['risk_tolerance'] = risk_tolerance
+
+        return recommendation
+
+if __name__ == "__main__":
+    financial_expert = FinancialExpertSystem()
+
+    print("Welcome to the Financial Planning Expert System!")
+
+    investment_strategy = financial_expert.recommend_investment_strategy()
+
+    print("\nBased on your responses, we recommend an", investment_strategy, "investment strategy.")
+    print("Thank you for using the Financial Planning Expert System!")
+
+51) Develop a conversational AI chatbot in the field of food ordering system
+import random
+
+class FoodOrderingChatbot:
+    def __init__(self):
+        self.menu = {
+            '1': {'name': 'Pizza', 'price': 10.99},
+            '2': {'name': 'Burger', 'price': 5.99},
+            '3': {'name': 'Pasta', 'price': 8.99},
+        }
+        self.user_order = {}
+
+    def welcome(self):
+        return "Welcome to the Food Ordering Chatbot! How can I help you today?"
+
+    def display_menu(self):
+        menu_text = "Menu:\n"
+        for item_id, details in self.menu.items():
+            menu_text += f"{item_id}. {details['name']} - ${details['price']}\n"
+        return menu_text
+
+    def order_food(self, food_item_id):
+        if food_item_id in self.menu:
+            item = self.menu[food_item_id]
+            self.user_order = {'name': item['name'], 'price': item['price']}
+            return f"You have ordered {item['name']}. Your total is ${item['price']}. Would you like to place the order?"
+        else:
+            return "Sorry, I couldn't find that item in the menu. Please try again."
+
+    def check_order_status(self):
+        if self.user_order:
+            return f"Your current order status is: {self.user_order['name']} is in process."
+        else:
+            return "You don't have any active orders. Would you like to place a new order?"
+
+    def handle_input(self, user_input):
+        user_input = user_input.lower()
+        if "order" in user_input:
+            food_item_id = input("Enter the item number you want to order: ")
+            return self.order_food(food_item_id)
+        elif "status" in user_input:
+            return self.check_order_status()
+        elif "menu" in user_input:
+            return self.display_menu()
+        elif "exit" in user_input or "quit" in user_input:
+            return "Thank you for using the Food Ordering Chatbot. Goodbye!"
+        else:
+            return "Sorry, I didn't understand that. Can you please repeat?"
+
+    def run(self):
+        print(self.welcome())
+        while True:
+            user_input = input("User: ")
+            response = self.handle_input(user_input)
+            print(f"Bot: {response}")
+            if "exit" in user_input or "quit" in user_input:
+                break
+
+if __name__ == "__main__":
+    chatbot = FoodOrderingChatbot()
+    chatbot.run()
+49) Use heuristic search techniques to implement hill climbing algorithm
+import random
+
+def objective_function(x):
+    # Example objective function (you can replace this with your own function)
+    return -((x - 5) ** 2)  # Maximizing a quadratic function
+
+def hill_climbing(initial_solution, max_iterations):
+    current_solution = initial_solution
+
+    for _ in range(max_iterations):
+        neighbors = generate_neighbors(current_solution)
+        neighbor_values = [objective_function(neighbor) for neighbor in neighbors]
+        
+        best_neighbor = neighbors[neighbor_values.index(max(neighbor_values))]
+        
+        if objective_function(best_neighbor) > objective_function(current_solution):
+            current_solution = best_neighbor
+
+    return current_solution
+
+def generate_neighbors(solution):
+    # Simple function to generate neighbors by adding or subtracting a small random value
+    return [solution + random.uniform(-0.5, 0.5) for _ in range(5)]
+
+if __name__ == "__main__":
+    # Example usage
+    initial_solution = random.uniform(0, 10)
+    max_iterations = 100
+
+    best_solution = hill_climbing(initial_solution, max_iterations)
+
+    print(f"Best solution found: {best_solution}")
+    print(f"Objective function value: {objective_function(best_solution)}")
+
+user input: import random
+
+def objective_function(x):
+    # Example objective function (you can replace this with your own function)
+    return -((x - 5) ** 2)  # Maximizing a quadratic function
+
+def hill_climbing(initial_solution, max_iterations):
+    current_solution = initial_solution
+
+    for _ in range(max_iterations):
+        neighbors = generate_neighbors(current_solution)
+        neighbor_values = [objective_function(neighbor) for neighbor in neighbors]
+        
+        best_neighbor = neighbors[neighbor_values.index(max(neighbor_values))]
+        
+        if objective_function(best_neighbor) > objective_function(current_solution):
+            current_solution = best_neighbor
+
+    return current_solution
+
+def generate_neighbors(solution):
+    # Simple function to generate neighbors by adding or subtracting a small random value
+    return [solution + random.uniform(-0.5, 0.5) for _ in range(5)]
+
+if __name__ == "__main__":
+    # User input for initial solution and number of iterations
+    initial_solution = float(input("Enter the initial solution: "))
+    max_iterations = int(input("Enter the number of iterations: "))
+
+    best_solution = hill_climbing(initial_solution, max_iterations)
+
+    print(f"Best solution found: {best_solution}")
+    print(f"Objective function value: {objective_function(best_solution)}")
+
+46) CSP for n queen problem 
+def is_safe(board, row, col, n):
+    # Check if there is a queen in the same row
+    for i in range(col):
+        if board[row][i] == 1:
+            return False
+
+    # Check upper diagonal on the left side
+    for i, j in zip(range(row, -1, -1), range(col, -1, -1)):
+        if board[i][j] == 1:
+            return False
+
+    # Check lower diagonal on the left side
+    for i, j in zip(range(row, n, 1), range(col, -1, -1)):
+        if board[i][j] == 1:
+            return False
+
+    return True
+
+def solve_n_queens_util(board, col, n):
+    if col == n:
+        return True
+
+    for i in range(n):
+        if is_safe(board, i, col, n):
+            board[i][col] = 1
+            if solve_n_queens_util(board, col + 1, n):
+                return True
+            board[i][col] = 0
+
+    return False
+
+def solve_n_queens(n):
+    board = [[0 for _ in range(n)] for _ in range(n)]
+
+    if not solve_n_queens_util(board, 0, n):
+        print("Solution does not exist.")
+        return
+
+    print_solution(board)
+
+def print_solution(board):
+    for row in board:
+        print(" ".join(["Q" if col == 1 else "." for col in row]))
+
+if __name__ == "__main__":
+    n = int(input("Enter the number of queens: "))
+    solve_n_queens(n)
+csp:
+pip install python-constraint
+ from constraint import Problem, AllDifferentConstraint
+
+def n_queens(n):
+    problem = Problem()
+    
+    # Define variables (queen positions)
+    problem.addVariables(range(n), range(n))
+    
+    # Add constraints
+    problem.addConstraint(AllDifferentConstraint())
+    
+    def diagonal_constraint(q1, q2, d):
+        return abs(q1 - q2) != d
+    
+    for i in range(n):
+        for j in range(i + 1, n):
+            problem.addConstraint(diagonal_constraint, (i, j, j - i))
+            problem.addConstraint(diagonal_constraint, (i, j, i - j))
+    
+    # Find solution
+    solutions = problem.getSolutions()
+    
+    return solutions
+
+def print_solution(solution):
+    for row in solution:
+        line = ["Q" if col == row else "." for col in solution[row]]
+        print(" ".join(line))
+
+if __name__ == "__main__":
+    n = int(input("Enter the number of queens: "))
+    
+    solutions = n_queens(n)
+    
+    print(f"\nTotal solutions found: {len(solutions)}")
+    if solutions:
+        print("\nOne of the solutions:")
+        print_solution(solutions[0])
+
+
+
