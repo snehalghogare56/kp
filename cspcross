@@ -1,0 +1,224 @@
+47, 61) Constraint Satisfaction problem for crossword problem
+Csp: from constraint import Problem, AllDifferentConstraint
+
+def create_crossword_csp(words, grid_size):
+    problem = Problem()
+
+    # Define variables (word placements)
+    for word in words:
+        word_length = len(word)
+        for i in range(grid_size - word_length + 1):
+            for j in range(grid_size):
+                problem.addVariable(f"{word}_{i}_{j}", [0, 1])
+
+    # Add constraints for horizontal and vertical placement
+    for word1 in words:
+        for word2 in words:
+            if word1 != word2:
+                for i in range(grid_size):
+                    for j in range(grid_size):
+                        if i + len(word1) <= grid_size and j + len(word2) <= grid_size:
+                            # Check horizontal placement
+                            constraint_expr = [(f"{word1}_{i}_{k}", 1) for k in range(len(word1))] + \
+                                              [(f"{word2}_{j}_{k}", 1) for k in range(len(word2))]
+                            problem.addConstraint(AllDifferentConstraint(), constraint_expr)
+
+                            # Check vertical placement
+                            constraint_expr = [(f"{word1}_{k}_{j}", 1) for k in range(len(word1))] + \
+                                              [(f"{word2}_{k}_{i}", 1) for k in range(len(word2))]
+                            problem.addConstraint(AllDifferentConstraint(), constraint_expr)
+
+    return problem
+
+def solve_crossword(words, grid_size):
+    csp = create_crossword_csp(words, grid_size)
+    solution = csp.getSolution()
+    return solution
+
+def print_crossword_solution(solution, words, grid_size):
+    grid = [[' ' for _ in range(grid_size)] for _ in range(grid_size)]
+
+    for var, value in solution.items():
+        if value == 1:
+            word, i, j = var.split('_')
+            i, j = int(i), int(j)
+            for k, letter in enumerate(word):
+                if word[i] != grid[i + k][j]:
+                    grid[i + k][j] = letter
+
+    # Print the crossword grid
+    for row in grid:
+        print(' '.join(row))
+
+if __name__ == "__main__":
+    # Example words for the crossword
+    crossword_words = ["python", "java", "swift", "csharp", "ruby", "html"]
+
+    # Size of the crossword grid (assumes a square grid)
+    crossword_grid_size = 10
+
+    # Solve the crossword puzzle
+    crossword_solution = solve_crossword(crossword_words, crossword_grid_size)
+
+    if crossword_solution:
+        print("\nCrossword Solution:")
+        print_crossword_solution(crossword_solution, crossword_words, crossword_grid_size)
+    else:
+        print("\nNo solution found.")
+user input: from constraint import Problem, AllDifferentConstraint
+
+def create_crossword_csp(words, grid_size):
+    problem = Problem()
+
+    # Define variables (word placements)
+    for word in words:
+        word_length = len(word)
+        for i in range(grid_size - word_length + 1):
+            for j in range(grid_size):
+                problem.addVariable(f"{word}_{i}_{j}", [0, 1])
+
+    # Add constraints for horizontal and vertical placement
+    for word1 in words:
+        for word2 in words:
+            if word1 != word2:
+                for i in range(grid_size):
+                    for j in range(grid_size):
+                        if i + len(word1) <= grid_size and j + len(word2) <= grid_size:
+                            # Check horizontal placement
+                            constraint_expr = [(f"{word1}_{i}_{k}", 1) for k in range(len(word1))] + \
+                                              [(f"{word2}_{j}_{k}", 1) for k in range(len(word2))]
+                            problem.addConstraint(AllDifferentConstraint(), constraint_expr)
+
+                            # Check vertical placement
+                            constraint_expr = [(f"{word1}_{k}_{j}", 1) for k in range(len(word1))] + \
+                                              [(f"{word2}_{k}_{i}", 1) for k in range(len(word2))]
+                            problem.addConstraint(AllDifferentConstraint(), constraint_expr)
+
+    return problem
+
+def solve_crossword(words, grid_size):
+    csp = create_crossword_csp(words, grid_size)
+    solution = csp.getSolution()
+    return solution
+
+def print_crossword_solution(solution, words, grid_size):
+    grid = [[' ' for _ in range(grid_size)] for _ in range(grid_size)]
+
+    for var, value in solution.items():
+        if value == 1:
+            word, i, j = var.split('_')
+            i, j = int(i), int(j)
+            for k, letter in enumerate(word):
+                if word[i] != grid[i + k][j]:
+                    grid[i + k][j] = letter
+
+    # Print the crossword grid
+    for row in grid:
+        print(' '.join(row))
+
+def get_user_input():
+    print("Enter the words for the crossword (separated by spaces):")
+    words = input().split()
+
+    print("Enter the size of the crossword grid:")
+    grid_size = int(input())
+
+    return words, grid_size
+
+if __name__ == "__main__":
+    crossword_words, crossword_grid_size = get_user_input()
+
+    # Solve the crossword puzzle
+    crossword_solution = solve_crossword(crossword_words, crossword_grid_size)
+
+    if crossword_solution:
+        print("\nCrossword Solution:")
+        print_crossword_solution(crossword_solution, crossword_words, crossword_grid_size)
+    else:
+        print("\nNo solution found.")
+
+2. def crossword_csp(words, grid):
+    assignment = {}
+    solutions = backtrack(assignment, words, grid)
+    return solutions if solutions else []
+
+def backtrack(assignment, words, grid):
+    if len(assignment) == len(grid) * len(grid[0]):
+        return [assignment.copy()]
+    
+    i, j = divmod(len(assignment), len(grid[0]))
+    
+    if grid[i][j] == '.':
+        for word in words:
+            new_assignment = assignment.copy()
+            new_assignment[f"({i},{j})"] = word
+            result = backtrack(new_assignment, words, grid)
+            if result:
+                return result
+    
+    return None
+
+if __name__ == "__main__":
+    crossword_grid = [
+        ['.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.'],
+    ]
+
+    word_list = ["python", "java", "swift", "csharp", "ruby", "html"]
+
+    solutions = crossword_csp(word_list, crossword_grid)
+
+    for solution in solutions:
+        for i in range(len(crossword_grid)):
+            for j in range(len(crossword_grid[i])):
+                print(solution.get(f"({i},{j})", '.'), end=' ')
+            print()
+        print("\n")
+
+user input: def crossword_csp(words, grid):
+    assignment = {}
+    solutions = backtrack(assignment, words, grid)
+    return solutions if solutions else []
+
+def backtrack(assignment, words, grid):
+    if len(assignment) == len(grid) * len(grid[0]):
+        return [assignment.copy()]
+    
+    i, j = divmod(len(assignment), len(grid[0]))
+    
+    if grid[i][j] == '.':
+        for word in words:
+            new_assignment = assignment.copy()
+            new_assignment[f"({i},{j})"] = word
+            result = backtrack(new_assignment, words, grid)
+            if result:
+                return result
+    
+    return None
+
+def get_user_input():
+    print("Enter the crossword grid (use '.' for empty cells):")
+    crossword_grid = []
+    for _ in range(6):  # Assuming a 6x6 grid for simplicity
+        row = list(input())
+        crossword_grid.append(row)
+    return crossword_grid
+
+if __name__ == "__main__":
+    crossword_grid = get_user_input()
+
+    print("Enter the word list:")
+    word_list = input().split()
+
+    solutions = crossword_csp(word_list, crossword_grid)
+
+    for solution in solutions:
+        for i in range(len(crossword_grid)):
+            for j in range(len(crossword_grid[i])):
+                print(solution.get(f"({i},{j})", '.'), end=' ')
+            print()
+        print("\n")
