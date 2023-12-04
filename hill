@@ -1,0 +1,81 @@
+67) write a program to implement hill climbing algorithm
+import random
+
+def objective_function(state):
+    # Define your objective function here
+    # For example, consider maximizing the sum of state values
+    return sum(state)
+
+def generate_neighbor(current_state):
+    # Generate a neighboring state by randomly changing one element
+    neighbor = current_state.copy()
+    index_to_change = random.randint(0, len(current_state) - 1)
+    neighbor[index_to_change] += random.choice([-1, 1])
+    return neighbor
+
+def hill_climbing(initial_state, max_iterations):
+    current_state = initial_state
+    current_value = objective_function(current_state)
+
+    for iteration in range(max_iterations):
+        neighbor = generate_neighbor(current_state)
+        neighbor_value = objective_function(neighbor)
+
+        if neighbor_value > current_value:
+            current_state = neighbor
+            current_value = neighbor_value
+
+    return current_state, current_value
+
+if __name__ == "__main__":
+    # Define the problem - initial state and number of iterations
+    initial_state = [random.randint(0, 10) for _ in range(5)]
+    max_iterations = 1000
+
+    # Run Hill Climbing algorithm
+    final_state, final_value = hill_climbing(initial_state, max_iterations)
+
+    # Print results
+    print("Initial State:", initial_state)
+    print("Final State:", final_state)
+    print("Objective Value:", final_value)
+
+user input: import random
+
+def objective_function(state):
+    return sum(state)
+
+def generate_neighbor(current_state):
+    neighbor = current_state.copy()
+    index_to_change = random.randint(0, len(current_state) - 1)
+    neighbor[index_to_change] += random.choice([-1, 1])
+    return neighbor
+
+def hill_climbing(initial_state, max_iterations):
+    current_state = initial_state
+    current_value = objective_function(current_state)
+
+    for iteration in range(max_iterations):
+        neighbor = generate_neighbor(current_state)
+        neighbor_value = objective_function(neighbor)
+
+        if neighbor_value > current_value:
+            current_state = neighbor
+            current_value = neighbor_value
+
+    return current_state, current_value
+
+def get_user_input():
+    length = int(input("Enter the length of the state vector: "))
+    initial_state = [random.randint(0, 10) for _ in range(length)]
+    max_iterations = int(input("Enter the maximum number of iterations: "))
+    return initial_state, max_iterations
+
+if __name__ == "__main__":
+    initial_state, max_iterations = get_user_input()
+
+    final_state, final_value = hill_climbing(initial_state, max_iterations)
+
+    print("Initial State:", initial_state)
+    print("Final State:", final_state)
+    print("Objective Value:", final_value)
